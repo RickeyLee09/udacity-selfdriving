@@ -1,47 +1,89 @@
 # **Finding Lane Lines on the Road** 
 
-## Writeup Template
-
-### You can use this file as a template for your writeup if you want to submit it as a markdown file. But feel free to use some other method and submit a pdf if you prefer.
-
----
 
 **Finding Lane Lines on the Road**
 
-The goals / steps of this project are the following:
-* Make a pipeline that finds lane lines on the road
-* Reflect on your work in a written report
+The goals of this project is to make a pipeline that finds lane lines on the road
 
 
 [//]: # (Image References)
 
 [image1]: ./examples/grayscale.jpg "Grayscale"
+[origin]: ./test_images/solidWhiteRight.jpg "Origin"
+[after]: ./test_images_output/solidWhiteRight.jpg "processed"
 
 ---
 
-### Reflection
+### 1. Run the Code
+The project is written locally by Python IDE, which is saved in the 'lane_detection.py'.
+So if it is possible, simply run the python file would get the results.
+However, I also pasted the codes into the Jupter Notebook, it should be fine.
 
-### 1. Describe your pipeline. As part of the description, explain how you modified the draw_lines() function.
+</br></br>
 
-My pipeline consisted of 5 steps. First, I converted the images to grayscale, then I .... 
+### 2. Final Results
+In this project, several images and three videos would be processed to find lane lines. This part will show one of
+the [origin] images first and then the [processed] output image.
+All the output images are saved into test_images_output folder and videos are saved in the test_videos_output folder.
+
+</br></br>
+
+### 3. Pipeline Description.
+
+The overall pipeline consisted of 5 steps.
+
+    1. I selected the white and yellow areas. This strategy iis not used at the beginning of the project, however,
+         it shows that adding this function could slightly increase the accuracy of identification.
+
+    2. Defind region of interest for color selection and edge detection. in this part, i defined the apex of the
+         triangle area as the point below the  middle point of the image.
+
+    3. Change the image into grey scale and do gaussian blur. By doing so, the edges would be more apparent.
+
+    4. Canny Edge detection. Find the edges inside the RoI , which is helpful to find the lines.
+
+    5. Find hough lines and then draw them on the original image.
+
+</br></br>
 
 In order to draw a single line on the left and right lanes, I modified the draw_lines() function by ...
 
-If you'd like to include images to show how the pipeline works, here is how to include an image: 
+    1. Compute the slopes of each line.
 
-![alt text][image1]
+    2. Filter the useless lines and classify the left lines and right lines by different slopes.
+        In the case, I define the lines with ` slope < -0.68 ` as the left lanes and the ` slope > 0.68 ` are the right lanes.
+        All the other lines would be discarded.
 
+    3. Reshape the lines. Then I reshape each line matrix to get a matrix of points. In this way, I am able to maintain the points
+        along the lane line.
+        If the lane matrix is of shape (x, 4), the reshaped point matrix would be (x/2 , 2)
 
-### 2. Identify potential shortcomings with your current pipeline
+    4. Fit a line through the points. According to the points, I used the cv2.fitLine function to find the best line describe
+        the lane line. In this project, the least square method is used to fit a line.
 
+</br></br>
 
-One potential shortcoming would be what would happen when ... 
+### 4. Identify potential shortcomings with your current pipeline
 
-Another shortcoming could be ...
+After several test cases, there are still many problems in current pipeline.
 
+    1. One potential shortcoming would be what would happen when the lane lines cannot be clearly identified.
 
-### 3. Suggest possible improvements to your pipeline
+    2. Another shortcoming could be this pipeline would be strongly influenced with tree shallows on the road. It is severe because the shallows
+    will be regarded as edges in the image.
 
-A possible improvement would be to ...
+    3. When processing the bend parts, it is not performing very well.
 
-Another potential improvement could be to ...
+    4. The output quality of challenge.mp4 video is bad.
+
+</br></br>
+
+### 5. Suggest possible improvements to your pipeline
+
+    1. There would be some methods to selected important hough-transformed lines and throw the bad results.
+
+    2. Is it possible to remove the shallows on the road.
+
+    3. The RoI should be self-adaptive when the vehicle is moving from a straight road to a bend road.
+
+    4. By using the fitLine method, the output line is shaking in the videos, it would be better if it becomes more stable.

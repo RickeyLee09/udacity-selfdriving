@@ -10,47 +10,96 @@ When we drive, we use our eyes to decide where to go.  The lines on the road tha
 
 In this project you will detect lane lines in images using Python and OpenCV.  OpenCV means "Open-Source Computer Vision", which is a package that has many useful tools for analyzing images.  
 
-To complete the project, two files will be submitted: a file containing project code and a file containing a brief write up explaining your solution. We have included template files to be used both for the [code](https://github.com/udacity/CarND-LaneLines-P1/blob/master/P1.ipynb) and the [writeup](https://github.com/udacity/CarND-LaneLines-P1/blob/master/writeup_template.md).The code file is called P1.ipynb and the writeup template is writeup_template.md 
-
-To meet specifications in the project, take a look at the requirements in the [project rubric](https://review.udacity.com/#!/rubrics/322/view)
 
 
-Creating a Great Writeup
----
-For this project, a great writeup should provide a detailed response to the "Reflection" section of the [project rubric](https://review.udacity.com/#!/rubrics/322/view). There are three parts to the reflection:
-
-1. Describe the pipeline
-
-2. Identify any shortcomings
-
-3. Suggest possible improvements
-
-We encourage using images in your writeup to demonstrate how your pipeline works.  
-
-All that said, please be concise!  We're not looking for you to write a book here: just a brief description.
-
-You're not required to use markdown for your writeup.  If you use another method please just submit a pdf of your writeup. Here is a link to a [writeup template file](https://github.com/udacity/CarND-LaneLines-P1/blob/master/writeup_template.md). 
+# **Finding Lane Lines on the Road**
 
 
-The Project
+**Finding Lane Lines on the Road**
+
+The goals of this project is to make a pipeline that finds lane lines on the road
+
+
+[//]: # (Image References)
+
+[image1]: ./examples/grayscale.jpg "Grayscale"
+[origin]: ./test_images/solidWhiteRight.jpg "Origin"
+[after]: ./test_images_output/solidWhiteRight.jpg "processed"
+
 ---
 
-## If you have already installed the [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) you should be good to go!   If not, you should install the starter kit to get started on this project. ##
+### 1. Run the Code
+The project is written locally by Python IDE, which is saved in the 'lane_detection.py'.
+So if it is possible, simply run the python file would get the results.
+However, I also pasted the codes into the Jupter Notebook, it should be fine.
 
-**Step 1:** Set up the [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) if you haven't already.
+</br></br>
 
-**Step 2:** Open the code in a Jupyter Notebook
+### 2. Final Results
+In this project, several images and three videos would be processed to find lane lines. This part will show one of
+the [origin] images first and then the [processed] output image.
+All the output images are saved into test_images_output folder and videos are saved in the test_videos_output folder.
 
-You will complete the project code in a Jupyter notebook.  If you are unfamiliar with Jupyter Notebooks, check out [Udacity's free course on Anaconda and Jupyter Notebooks](https://classroom.udacity.com/courses/ud1111) to get started.
+<img src="test_images_output/whiteCarLaneSwitch.jpg" width="480" alt="Combined Image" />
 
-Jupyter is an Ipython notebook where you can run blocks of code and see results interactively.  All the code for this project is contained in a Jupyter notebook. To start Jupyter in your browser, use terminal to navigate to your project directory and then run the following command at the terminal prompt (be sure you've activated your Python 3 carnd-term1 environment as described in the [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) installation instructions!):
+</br></br>
 
-`> jupyter notebook`
+### 3. Pipeline Description.
 
-A browser window will appear showing the contents of the current directory.  Click on the file called "P1.ipynb".  Another browser window will appear displaying the notebook.  Follow the instructions in the notebook to complete the project.  
+The overall pipeline consisted of 5 steps.
 
-**Step 3:** Complete the project and submit both the Ipython notebook and the project writeup
+    1. I selected the white and yellow areas. This strategy iis not used at the beginning of the project, however,
+         it shows that adding this function could slightly increase the accuracy of identification.
 
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
+    2. Defind region of interest for color selection and edge detection. in this part, i defined the apex of the
+         triangle area as the point below the  middle point of the image.
 
+    3. Change the image into grey scale and do gaussian blur. By doing so, the edges would be more apparent.
+
+    4. Canny Edge detection. Find the edges inside the RoI , which is helpful to find the lines.
+
+    5. Find hough lines and then draw them on the original image.
+
+</br></br>
+
+In order to draw a single line on the left and right lanes, I modified the draw_lines() function by ...
+
+    1. Compute the slopes of each line.
+
+    2. Filter the useless lines and classify the left lines and right lines by different slopes.
+        In the case, I define the lines with ` slope < -0.68 ` as the left lanes and the ` slope > 0.68 ` are the right lanes.
+        All the other lines would be discarded.
+
+    3. Reshape the lines. Then I reshape each line matrix to get a matrix of points. In this way, I am able to maintain the points
+        along the lane line.
+        If the lane matrix is of shape (x, 4), the reshaped point matrix would be (x/2 , 2)
+
+    4. Fit a line through the points. According to the points, I used the cv2.fitLine function to find the best line describe
+        the lane line. In this project, the least square method is used to fit a line.
+
+</br></br>
+
+### 4. Identify potential shortcomings with your current pipeline
+
+After several test cases, there are still many problems in current pipeline.
+
+    1. One potential shortcoming would be what would happen when the lane lines cannot be clearly identified.
+
+    2. Another shortcoming could be this pipeline would be strongly influenced with tree shallows on the road. It is severe because the shallows
+    will be regarded as edges in the image.
+
+    3. When processing the bend parts, it is not performing very well.
+
+    4. The output quality of challenge.mp4 video is bad.
+
+</br></br>
+
+### 5. Suggest possible improvements to your pipeline
+
+    1. There would be some methods to selected important hough-transformed lines and throw the bad results.
+
+    2. Is it possible to remove the shallows on the road.
+
+    3. The RoI should be self-adaptive when the vehicle is moving from a straight road to a bend road.
+
+    4. By using the fitLine method, the output line is shaking in the videos, it would be better if it becomes more stable.
